@@ -1,3 +1,4 @@
+using BlogsAPi;
 using BlogsAPi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +13,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<BlogsSettings>(
     builder.Configuration.GetSection("ConnectionStrings"));
 
-builder.Services.AddSingleton<BlogsSettings>();
+builder.Services.AddSingleton<BlogsService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
