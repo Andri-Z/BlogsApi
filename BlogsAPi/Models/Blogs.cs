@@ -21,8 +21,8 @@ namespace BlogsAPi.Models
         [BsonElement("tags")]
         public string[] Tags { get; set; } = Array.Empty<string>();
         [BsonElement("createAt")]
-        public DateTime CreateAt { get; set; }
+        public DateTime CreateAt { get; set; } = DateTime.Now;
         [BsonElement("updateAt")]
-        public DateTime UpdateAt { get; set; }
+        public DateTime UpdateAt { get; set; } = DateTime.Now;
     }
 }
