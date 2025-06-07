@@ -1,4 +1,5 @@
-﻿using BlogsAPi.Models;
+﻿using BlogsAPi.DTOs;
+using BlogsAPi.Models;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -10,7 +11,7 @@ namespace BlogsAPi.Controllers
     public class BlogsController : Controller
     {
         private readonly BlogsService _blogs;
-        public BlogsController(BlogsService blogs)=>
+        public BlogsController(BlogsService blogs) =>
             _blogs = blogs;
         [HttpGet]
         public async Task<ActionResult<Blogs>> Get()
@@ -28,7 +29,7 @@ namespace BlogsAPi.Controllers
             {
                 if (ObjectId.TryParse(id, out ObjectId _id))
                 {
-                    var result = await _blogs.GetBlogsById(_id);
+                    var result = await _blogs.GetBlogsByIdAsync(_id);
                     if (result == null)
                         return NotFound("Blog no encontrado");
 
@@ -43,25 +44,52 @@ namespace BlogsAPi.Controllers
             {
                 return BadRequest("Ha ocurrido un error durante la operación.");
             }
-            
+
         }
         [HttpPost]
-        public async Task<ActionResult> Post(Blogs blogs)
+        public async Task<ActionResult> Post([FromBody] BlogsDTO blog)
         {
-            await _blogs.CreateBlogsAsync(blogs);
+            try
+            {
+                var newBlog = new Blogs
+                {
+                    Id = ObjectId.GenerateNewId(),
+                    Title = blog.Title,
+                    Content = blog.Content,
+                    Category = blog.Category,
+                    Tags = blog.Tags,
+                    CreateAt = DateTime.UtcNow,
+                    UpdateAt = DateTime.UtcNow
+                };
 
-            return CreatedAtAction(nameof(Get), new { id = blogs.Id }, blogs);
+                await _blogs.CreateBlogsAsync(newBlog);
+                return CreatedAtAction(nameof(Get), new { id = newBlog.Id},newBlog);
+            }
+            catch
+            {
+                return BadRequest("Ha ocurrido un error al crear el blog.");
+            }
+            
         }
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put(string id, Blogs blog)
+        public async Task<ActionResult> Put(string id, BlogsDTO blog)
         {
             try
             {
                 if (ObjectId.TryParse(id, out ObjectId _id))
                 {
-                    var result = await _blogs.UpdateBlogsAsync(_id, blog);
+                    var newBlog = new Blogs
+                    {
+                        Title = blog.Title,
+                        Content = blog.Content,
+                        Category = blog.Category,
+                        Tags = blog.Tags,
+                        UpdateAt = DateTime.UtcNow
+                    };
+                    var result = await _blogs.UpdateBlogsAsync(_id, newBlog);
+                    var updateBlog = await _blogs.GetBlogsByIdAsync(_id);
                     if (result.ModifiedCount > 0)
-                        return CreatedAtAction(nameof(Get), new { id = blog.Id }, blog);
+                        return Ok(updateBlog);
                     else
                         return BadRequest("Ha ocurrido un error al actualizar el archivo.");
                 }
@@ -72,7 +100,32 @@ namespace BlogsAPi.Controllers
             }
             catch
             {
-                return BadRequest();
+                return BadRequest("Ha ocurrido un error durante la operacion.");
+            }
+        }
+        [HttpDelete]
+        public async Task<ActionResult> Delete (string id)
+        {
+            try
+            {
+                if(ObjectId.TryParse(id, out ObjectId _id))
+                {
+                    var result = await _blogs.DeleteAsync(_id);
+                    if (result.DeletedCount > 0)
+                        return Ok("El blog fue eliminado correctamente.");
+                    else if (result.DeletedCount == 0 && result.IsAcknowledged == true)
+                        return BadRequest("Este blog ya ha sido eliminado");
+                    else
+                        return BadRequest();
+                }
+                else
+                {
+                    return BadRequest("Este id no es valido.");
+                }
+            }
+            catch
+            {
+                return BadRequest("Ha ocurrido un error durante la operacion.");
             }
         }
     }
