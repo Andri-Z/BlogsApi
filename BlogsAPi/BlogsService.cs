@@ -33,5 +33,9 @@ namespace BlogsAPi
            
         public async Task<DeleteResult> DeleteAsync(ObjectId id) =>
             await _blogsCollection.DeleteOneAsync(x => x.Id == id);
+        public async Task BusquedaAsync(string term)
+        {
+
+        }
     }
 }
