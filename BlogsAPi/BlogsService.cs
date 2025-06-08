@@ -33,9 +33,14 @@ namespace BlogsAPi
            
         public async Task<DeleteResult> DeleteAsync(ObjectId id) =>
             await _blogsCollection.DeleteOneAsync(x => x.Id == id);
-        public async Task BusquedaAsync(string term)
+        public async Task<List<Blogs>> BusquedaAsync(string term)
         {
-
+            var filtro = Builders<Blogs>.Filter.Or(
+                Builders<Blogs>.Filter.Regex(x => x.Title, new BsonRegularExpression(term,"i")),
+                Builders<Blogs>.Filter.Regex(x=>x.Category, new BsonRegularExpression(term,"i")),
+                Builders<Blogs>.Filter.Regex(x=>x.Content, new BsonRegularExpression(term,"i"))
+            );
+            return await _blogsCollection.Find(filtro).ToListAsync();
         }
     }
 }

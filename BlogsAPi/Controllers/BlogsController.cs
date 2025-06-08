@@ -22,7 +22,7 @@ namespace BlogsAPi.Controllers
 
             return Ok(ListBlogs);
         }
-        [HttpGet("{id}")]
+        [HttpGet("{id:length(24)}")]
         public async Task<ActionResult<Blogs>> Get(string id)
         {
             try
@@ -45,6 +45,23 @@ namespace BlogsAPi.Controllers
                 return BadRequest("Ha ocurrido un error durante la operación.");
             }
 
+        }
+        [HttpGet("search/{term}")]
+        public async Task<ActionResult<Blogs>> GetblogsByTerm(string term)
+        {
+            try
+            {
+                var result = await _blogs.BusquedaAsync(term);
+                if (result.Count == 0)
+                    return NotFound();
+                else
+                    return Ok(result);
+            }
+            catch
+            {
+                return BadRequest("Ha ocurrido un error durante la operacion.");
+            }
+            
         }
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] BlogsDTO blog)
