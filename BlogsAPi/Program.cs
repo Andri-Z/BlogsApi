@@ -1,5 +1,7 @@
-using BlogsAPi;
+using BlogsAPi.Interfaces;
 using BlogsAPi.Models;
+using BlogsAPi.Services;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +14,10 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<BlogsSettings>(
     builder.Configuration.GetSection("ConnectionStrings"));
+builder.Services.AddSingleton<MongoClient>(sp =>
+    new MongoClient(builder.Configuration.GetConnectionString("BlogsApi")));
+builder.Services.AddScoped<IBlogs, BlogsService>();
 
-builder.Services.AddSingleton<BlogsService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

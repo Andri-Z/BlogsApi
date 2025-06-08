@@ -1,5 +1,7 @@
 ﻿using BlogsAPi.DTOs;
+using BlogsAPi.Interfaces;
 using BlogsAPi.Models;
+using BlogsAPi.Services;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -10,20 +12,20 @@ namespace BlogsAPi.Controllers
     [Route("api/v1/[controller]")]
     public class BlogsController : Controller
     {
-        private readonly BlogsService _blogs;
-        public BlogsController(BlogsService blogs) =>
+        private readonly IBlogs _blogs;
+        public BlogsController(IBlogs blogs) =>
             _blogs = blogs;
         [HttpGet]
-        public async Task<ActionResult<Blogs>> Get()
+        public async Task<ActionResult<List<Blogs>>> GetBlogs()
         {
-            List<Blogs> ListBlogs = await _blogs.GetBlogsAsyn();
+            List<Blogs> ListBlogs = await _blogs.GetBlogsAsync();
             if (!ListBlogs.Any())
                 return NotFound();
 
             return Ok(ListBlogs);
         }
         [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<Blogs>> Get(string id)
+        public async Task<ActionResult<Blogs>> GetBlogsById(string id)
         {
             try
             {
@@ -46,12 +48,12 @@ namespace BlogsAPi.Controllers
             }
 
         }
-        [HttpGet("search/{term}")]
-        public async Task<ActionResult<Blogs>> GetblogsByTerm(string term)
+        [HttpGet("search")]
+        public async Task<ActionResult<List<Blogs>>> GetblogsByTerm([FromQuery] string term)
         {
             try
             {
-                var result = await _blogs.BusquedaAsync(term);
+                var result = await _blogs.GetBlogsByTermAsync(term);
                 if (result.Count == 0)
                     return NotFound();
                 else
@@ -61,10 +63,10 @@ namespace BlogsAPi.Controllers
             {
                 return BadRequest("Ha ocurrido un error durante la operacion.");
             }
-            
+
         }
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] BlogsDTO blog)
+        public async Task<ActionResult> PostBlogs([FromBody] BlogsDTO blog)
         {
             try
             {
@@ -75,21 +77,21 @@ namespace BlogsAPi.Controllers
                     Content = blog.Content,
                     Category = blog.Category,
                     Tags = blog.Tags,
-                    CreateAt = DateTime.UtcNow,
-                    UpdateAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
 
-                await _blogs.CreateBlogsAsync(newBlog);
-                return CreatedAtAction(nameof(Get), new { id = newBlog.Id},newBlog);
+                await _blogs.PostBlogsAsync(newBlog);
+                return CreatedAtAction(nameof(GetBlogsById), new { id = newBlog.Id }, newBlog);
             }
             catch
             {
                 return BadRequest("Ha ocurrido un error al crear el blog.");
             }
-            
+
         }
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put(string id, BlogsDTO blog)
+        public async Task<ActionResult> PutBlogs(string id, BlogsDTO blog)
         {
             try
             {
@@ -101,9 +103,9 @@ namespace BlogsAPi.Controllers
                         Content = blog.Content,
                         Category = blog.Category,
                         Tags = blog.Tags,
-                        UpdateAt = DateTime.UtcNow
+                        UpdatedAt = DateTime.UtcNow
                     };
-                    var result = await _blogs.UpdateBlogsAsync(_id, newBlog);
+                    var result = await _blogs.PutBlogsAsync(_id, newBlog);
                     var updateBlog = await _blogs.GetBlogsByIdAsync(_id);
                     if (result.ModifiedCount > 0)
                         return Ok(updateBlog);
@@ -120,20 +122,18 @@ namespace BlogsAPi.Controllers
                 return BadRequest("Ha ocurrido un error durante la operacion.");
             }
         }
-        [HttpDelete]
-        public async Task<ActionResult> Delete (string id)
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteBlogs (string id)
         {
             try
             {
                 if(ObjectId.TryParse(id, out ObjectId _id))
                 {
-                    var result = await _blogs.DeleteAsync(_id);
+                    var result = await _blogs.DeleteBlogsAsync(_id);
                     if (result.DeletedCount > 0)
-                        return Ok("El blog fue eliminado correctamente.");
-                    else if (result.DeletedCount == 0 && result.IsAcknowledged == true)
-                        return BadRequest("Este blog ya ha sido eliminado");
+                        return NoContent();
                     else
-                        return BadRequest();
+                        return NotFound("Este blog no existe o fue eliminado.");
                 }
                 else
                 {
