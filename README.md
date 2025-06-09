@@ -2,6 +2,8 @@
 
 Este es un proyecto basico de **API RESTful** construido con **ASP.NET Core 8** y **MongoDB** que permite a los usuarios **crear, leer, actualizar y eliminar** publicaciones de blog. También incluye funcionalidades de **búsqueda** por titulo, contenido y categoria.
 
+Esta idea de proyecto la obtuve desde aqui: https://roadmap.sh/projects/blogging-platform-api
+
 ## ✨ Características
 
 - CRUD completo para publicaciones de blog.
