@@ -38,7 +38,7 @@ Debes modificar el archivo `appsettings.json`, este ya tiene la estructura, solo
 ```json
 {
   "ConnectionStrings": {
-    "BlogsApi": "mongodb://localhost:27017",
+    "BlogsApi": "Cadena de conexion",
     "DatabaseName": "NombreDeTuBase",
     "CollectionName": "NombreDeTuColeccion"
   }
