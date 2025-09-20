@@ -9,15 +9,11 @@ Esta idea de proyecto la obtuve desde aqui: https://roadmap.sh/projects/blogging
 - CRUD completo para publicaciones de blog.
 - Búsqueda por término en los campos de (titulo, contenido o categoría).
 - Arquitectura limpia y escalable.
-- Documentación automática con Swagger.
-- Soporte para MongoDB usando `MongoDB.Driver`.
 
 ## 🧱 Tecnologías usadas
 
 - ASP.NET Core 8
 - MongoDB
-- C#
-- Swagger / OpenAPI
 
 ## 🚀 Endpoints principales
 
@@ -39,11 +35,13 @@ Debes modificar el archivo `appsettings.json`, este ya tiene la estructura, solo
 {
   "ConnectionStrings": {
     "BlogsApi": "Cadena de conexion",
-    "DatabaseName": "NombreDeTuBase",
+    "DatabaseName": "NombreDeBaseDeDatos",
     "CollectionName": "NombreDeTuColeccion"
   }
 }
 ```
+
+Mongo.Driver se encargara de crear la base de datos y la coleccion si estas no existen.
 
 ## 🚴 Correr el proyecto
 
@@ -55,11 +53,9 @@ Debes modificar el archivo `appsettings.json`, este ya tiene la estructura, solo
 
 2. Modifica el archivo `appsettings.json` como se muestra arriba.
 
-3. Restaura paquetes y ejecuta el proyecto:
+3. Ejecuta el proyecto:
    ```bash
-   dotnet restore
+
    dotnet run
    ```
-## 🙌 Contribuciones
-
-¡Las contribuciones son bienvenidas! Siempre y cuando esto no afecte la funcionalidad del proyecto.
+   
