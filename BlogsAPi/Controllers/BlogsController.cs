@@ -16,7 +16,7 @@ namespace BlogsAPi.Controllers
         public BlogsController(IBlogs blogsService) =>
             _blogsService = blogsService;
 
-        [HttpGet]
+        [HttpGet] //Get: api/v1/Blogs/page?=1&limit?=1
         public async Task<ActionResult<ApiResponse<Blogs>>> Get([FromQuery]Pagination pag)
         {
             var blogList = await _blogsService.GetBlogsAsync(pag);
@@ -25,85 +25,50 @@ namespace BlogsAPi.Controllers
 
             return Ok(blogList);
         }
-        [HttpGet("id")]
-        public async Task<ActionResult<ApiResponse<Blogs>>> Get([FromQuery]string id)
+        [HttpGet("{id:length(24)}")] //Get: api/v1/Blogs/id
+        public async Task<ActionResult<ApiResponse<Blogs>>> Get(string id)
         {
-            if (ObjectId.TryParse(id, out ObjectId _id))
-            {
-                var result = await _blogsService.GetBlogsByIdAsync(_id);
-                if (result == null)
-                    return NotFound();
+            var result = await _blogsService.GetBlogsByIdAsync(id);
+            if (result == null)
+                return NotFound();
 
-                return Ok(result);
-            }
-            else
-            {
-                return BadRequest();
-            }
+            return Ok(result);
         }
-        [HttpGet("search")]
-        public async Task<ActionResult<List<Blogs>>> GetblogsByTerm([FromQuery] string term, Pagination pag)
+        [HttpGet("search")] //Get: api/v1/Blogs/search/term?=
+        public async Task<ActionResult<List<Blogs>>> GetblogsByTerm(string term,[FromQuery]Pagination pag)
         {
             var result = await _blogsService.GetBlogsByTermAsync(term,pag);
             if (result.Data.Count == 0)
                 return NotFound();
-            
+
             return Ok(result);
         }
-        [HttpPost]
+        [HttpPost] //Post: api/v1/Blogs
         public async Task<ActionResult> PostBlogs([FromBody] BlogsDTO blog)
         {
             var newBlog = new Blogs(blog);
             await _blogsService.PostBlogsAsync(newBlog);
             return CreatedAtAction(nameof(Get), new { id = newBlog.Id }, newBlog);
         }
-        [HttpPut("{id}")]
+        [HttpPut("{id:length(24)}")] //Put: api/v1/Blogs/id
         public async Task<ActionResult> PutBlogs(string id, BlogsDTO blog)
         {
-            try
-            {
-                if (ObjectId.TryParse(id, out ObjectId _id))
-                {
-                    var newBlog = new Blogs(blog)
-                    {
-                        Title = blog.Title,
-                        Content = blog.Content,
-                        Category = blog.Category,
-                        Tags = blog.Tags,
-                        UpdatedAt = DateTime.UtcNow
-                    };
-                    var result = await _blogsService.PutBlogsAsync(_id, newBlog);
-                    var updateBlog = await _blogsService.GetBlogsByIdAsync(_id);
-                    if (result.ModifiedCount > 0)
-                        return Ok(updateBlog);
-                    else
-                        return BadRequest();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-            }
-            catch
-            {
+            var newBlog = new Blogs(blog);
+            var result = await _blogsService.PutBlogsAsync(id, newBlog);
+            var updateBlog = await _blogsService.GetBlogsByIdAsync(id);
+            if (result.ModifiedCount > 0)
+                return Ok(updateBlog);
+            else
                 return BadRequest();
-            }
         }
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}")] //Delete: api/v1/Blogs/id
         public async Task<ActionResult> DeleteBlogs (string id)
         {
-            if(ObjectId.TryParse(id, out ObjectId _id))
-            {
-                var result = await _blogsService.DeleteBlogsAsync(_id);
-               if (result.DeletedCount > 0)
-                    return NoContent();
-                else
-                    return NotFound();
-            }
+            var result = await _blogsService.DeleteBlogsAsync(id);
+            if (result.DeletedCount > 0)
+                return NoContent();
             else
-            {
-                return BadRequest();
-            }
+                return NotFound();
         }
     }
 }

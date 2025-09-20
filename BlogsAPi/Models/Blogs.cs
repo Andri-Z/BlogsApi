@@ -10,7 +10,8 @@ namespace BlogsAPi.Models
     {
         [BsonId]
         [BsonElement("_id")]
-        public ObjectId? Id { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
         [Required]
         [MinLength(1)]
         [BsonElement("title")]
@@ -24,15 +25,13 @@ namespace BlogsAPi.Models
         [BsonElement("createAt")]
         public DateTime CreatedAt { get; set; }
         [BsonElement("updateAt")]
-        public DateTime UpdatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public Blogs(BlogsDTO blogs)
         {
-            Id = ObjectId.GenerateNewId();
             Title = blogs.Title;
             Content = blogs.Content;
             Category = blogs.Category;
             Tags = blogs.Tags;
-            UpdatedAt = DateTime.UtcNow;
         }
     }
 }

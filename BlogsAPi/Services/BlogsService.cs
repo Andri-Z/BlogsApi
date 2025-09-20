@@ -24,10 +24,10 @@ namespace BlogsAPi.Services
                                    .ToListAsync();
             return new ApiResponse<List<Blogs>>(data.Count, pag, data);
         }
-        public async Task<ApiResponse<Blogs>> GetBlogsByIdAsync(ObjectId id)
+        public async Task<ApiResponse<Blogs>> GetBlogsByIdAsync(string id)
         {
             var blog = await _blogs.Find(x => x.Id == id).FirstOrDefaultAsync();
-            return new ApiResponse<Blogs>(1,new Pagination{},blog);
+            return new ApiResponse<Blogs>(1,new Pagination{Page=1},blog);
         }
 
         public async Task<ApiResponse<List<Blogs>>> GetBlogsByTermAsync(string term, Pagination pag)
@@ -42,10 +42,10 @@ namespace BlogsAPi.Services
                                         .Skip((pag.Page - 1) * pag.Limit)
                                         .Limit(pag.Limit)
                                         .ToListAsync();
-            return new ApiResponse<List<Blogs>>(data.Count, new Pagination { }, data);                    
+            return new ApiResponse<List<Blogs>>(data.Count, new Pagination {Page = 1}, data);                    
         }
         
-        public async Task<UpdateResult> PutBlogsAsync(ObjectId id, Blogs blog)
+        public async Task<UpdateResult> PutBlogsAsync(string id, Blogs blog)
         {
             var update = Builders<Blogs>.Update
                                         .Set(x => x.Title, blog.Title)
@@ -55,10 +55,12 @@ namespace BlogsAPi.Services
                                         .Set(x => x.UpdatedAt, blog.UpdatedAt);
             return await _blogs.UpdateOneAsync(x => x.Id == id, update);
         }
-        public async Task PostBlogsAsync(Blogs blog)=>
+        public async Task PostBlogsAsync(Blogs blog)
+        {
+            blog.CreatedAt = DateTime.UtcNow;
             await _blogs.InsertOneAsync(blog);
-            
-        public async Task<DeleteResult> DeleteBlogsAsync(ObjectId id) =>
+        }
+        public async Task<DeleteResult> DeleteBlogsAsync(string id) =>
             await _blogs.DeleteOneAsync(x => x.Id == id);
     }
 }
