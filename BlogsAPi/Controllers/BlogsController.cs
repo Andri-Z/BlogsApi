@@ -10,85 +10,52 @@ namespace BlogsAPi.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class BlogsController : Controller
+    public class BlogsController : ControllerBase
     {
-        private readonly IBlogs _blogs;
-        public BlogsController(IBlogs blogs) =>
-            _blogs = blogs;
+        private readonly IBlogs _blogsService;
+        public BlogsController(IBlogs blogsService) =>
+            _blogsService = blogsService;
+
         [HttpGet]
-        public async Task<ActionResult<List<Blogs>>> GetBlogs()
+        public async Task<ActionResult<ApiResponse<Blogs>>> Get([FromQuery]Pagination pag)
         {
-            List<Blogs> ListBlogs = await _blogs.GetBlogsAsync();
-            if (!ListBlogs.Any())
+            var blogList = await _blogsService.GetBlogsAsync(pag);
+            if (!blogList.Data.Any())
                 return NotFound();
 
-            return Ok(ListBlogs);
+            return Ok(blogList);
         }
-        [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<Blogs>> GetBlogsById(string id)
+        [HttpGet("id")]
+        public async Task<ActionResult<ApiResponse<Blogs>>> Get([FromQuery]string id)
         {
-            try
+            if (ObjectId.TryParse(id, out ObjectId _id))
             {
-                if (ObjectId.TryParse(id, out ObjectId _id))
-                {
-                    var result = await _blogs.GetBlogsByIdAsync(_id);
-                    if (result == null)
-                        return NotFound("Blog no encontrado");
+                var result = await _blogsService.GetBlogsByIdAsync(_id);
+                if (result == null)
+                    return NotFound();
 
-                    return Ok(result);
-                }
-                else
-                {
-                    return BadRequest("Este Id no es valido");
-                }
+                return Ok(result);
             }
-            catch
+            else
             {
-                return BadRequest("Ha ocurrido un error durante la operación.");
+                return BadRequest();
             }
-
         }
         [HttpGet("search")]
-        public async Task<ActionResult<List<Blogs>>> GetblogsByTerm([FromQuery] string term)
+        public async Task<ActionResult<List<Blogs>>> GetblogsByTerm([FromQuery] string term, Pagination pag)
         {
-            try
-            {
-                var result = await _blogs.GetBlogsByTermAsync(term);
-                if (result.Count == 0)
-                    return NotFound();
-                else
-                    return Ok(result);
-            }
-            catch
-            {
-                return BadRequest("Ha ocurrido un error durante la operacion.");
-            }
-
+            var result = await _blogsService.GetBlogsByTermAsync(term,pag);
+            if (result.Data.Count == 0)
+                return NotFound();
+            
+            return Ok(result);
         }
         [HttpPost]
         public async Task<ActionResult> PostBlogs([FromBody] BlogsDTO blog)
         {
-            try
-            {
-                var newBlog = new Blogs
-                {
-                    Id = ObjectId.GenerateNewId(),
-                    Title = blog.Title,
-                    Content = blog.Content,
-                    Category = blog.Category,
-                    Tags = blog.Tags,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                await _blogs.PostBlogsAsync(newBlog);
-                return CreatedAtAction(nameof(GetBlogsById), new { id = newBlog.Id }, newBlog);
-            }
-            catch
-            {
-                return BadRequest("Ha ocurrido un error al crear el blog.");
-            }
-
+            var newBlog = new Blogs(blog);
+            await _blogsService.PostBlogsAsync(newBlog);
+            return CreatedAtAction(nameof(Get), new { id = newBlog.Id }, newBlog);
         }
         [HttpPut("{id}")]
         public async Task<ActionResult> PutBlogs(string id, BlogsDTO blog)
@@ -97,7 +64,7 @@ namespace BlogsAPi.Controllers
             {
                 if (ObjectId.TryParse(id, out ObjectId _id))
                 {
-                    var newBlog = new Blogs
+                    var newBlog = new Blogs(blog)
                     {
                         Title = blog.Title,
                         Content = blog.Content,
@@ -105,44 +72,37 @@ namespace BlogsAPi.Controllers
                         Tags = blog.Tags,
                         UpdatedAt = DateTime.UtcNow
                     };
-                    var result = await _blogs.PutBlogsAsync(_id, newBlog);
-                    var updateBlog = await _blogs.GetBlogsByIdAsync(_id);
+                    var result = await _blogsService.PutBlogsAsync(_id, newBlog);
+                    var updateBlog = await _blogsService.GetBlogsByIdAsync(_id);
                     if (result.ModifiedCount > 0)
                         return Ok(updateBlog);
                     else
-                        return BadRequest("Ha ocurrido un error al actualizar el archivo.");
+                        return BadRequest();
                 }
                 else
                 {
-                    return BadRequest("El id no es correcto.");
+                    return BadRequest();
                 }
             }
             catch
             {
-                return BadRequest("Ha ocurrido un error durante la operacion.");
+                return BadRequest();
             }
         }
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteBlogs (string id)
         {
-            try
+            if(ObjectId.TryParse(id, out ObjectId _id))
             {
-                if(ObjectId.TryParse(id, out ObjectId _id))
-                {
-                    var result = await _blogs.DeleteBlogsAsync(_id);
-                    if (result.DeletedCount > 0)
-                        return NoContent();
-                    else
-                        return NotFound("Este blog no existe o fue eliminado.");
-                }
+                var result = await _blogsService.DeleteBlogsAsync(_id);
+               if (result.DeletedCount > 0)
+                    return NoContent();
                 else
-                {
-                    return BadRequest("Este id no es valido.");
-                }
+                    return NotFound();
             }
-            catch
+            else
             {
-                return BadRequest("Ha ocurrido un error durante la operacion.");
+                return BadRequest();
             }
         }
     }
