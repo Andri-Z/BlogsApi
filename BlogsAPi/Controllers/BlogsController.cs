@@ -1,4 +1,5 @@
-﻿using BlogsAPi.DTOs;
+﻿
+using BlogsAPi.DTOs;
 using BlogsAPi.Interfaces;
 using BlogsAPi.Models;
 using BlogsAPi.Services;
@@ -17,7 +18,7 @@ namespace BlogsAPi.Controllers
             _blogsService = blogsService;
 
         [HttpGet] //Get: api/v1/Blogs/page?=1&limit?=1
-        public async Task<ActionResult<ApiResponse<Blogs>>> Get([FromQuery]Pagination pag)
+        public async Task<ActionResult<ApiResponse<Blogs>>> Get([FromQuery] Pagination pag)
         {
             var blogList = await _blogsService.GetBlogsAsync(pag);
             if (!blogList.Data.Any())
@@ -35,10 +36,10 @@ namespace BlogsAPi.Controllers
             return Ok(result);
         }
         [HttpGet("search")] //Get: api/v1/Blogs/search/term?=
-        public async Task<ActionResult<List<Blogs>>> GetblogsByTerm(string term,[FromQuery]Pagination pag)
+        public async Task<ActionResult<List<Blogs>>> GetblogsByTerm(string term, [FromQuery] Pagination pag)
         {
-            var result = await _blogsService.GetBlogsByTermAsync(term,pag);
-            if (result.Data.Count == 0)
+            var result = await _blogsService.GetBlogsByTermAsync(term, pag);
+            if (!result.Data.Any())
                 return NotFound();
 
             return Ok(result);
@@ -55,16 +56,18 @@ namespace BlogsAPi.Controllers
         {
             var newBlog = new Blogs(blog);
             var result = await _blogsService.PutBlogsAsync(id, newBlog);
-            var updateBlog = await _blogsService.GetBlogsByIdAsync(id);
-            if (result.ModifiedCount > 0)
-                return Ok(updateBlog);
+            if (result is not null)
+                return Ok(result);
             else
-                return BadRequest();
+                return NotFound();
         }
         [HttpDelete("{id}")] //Delete: api/v1/Blogs/id
-        public async Task<ActionResult> DeleteBlogs (string id)
+        public async Task<ActionResult> DeleteBlogs(string id)
         {
             var result = await _blogsService.DeleteBlogsAsync(id);
+            if (result is null)
+                return BadRequest();
+
             if (result.DeletedCount > 0)
                 return NoContent();
             else

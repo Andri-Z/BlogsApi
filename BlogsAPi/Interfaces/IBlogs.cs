@@ -11,7 +11,7 @@ namespace BlogsAPi.Interfaces
         Task<ApiResponse<Blogs>> GetBlogsByIdAsync(string id);
         Task<ApiResponse<List<Blogs>>> GetBlogsByTermAsync(string term,Pagination pag);
         Task PostBlogsAsync(Blogs blog);
-        Task<UpdateResult> PutBlogsAsync(string id, Blogs blog);
-        Task<DeleteResult> DeleteBlogsAsync(string id);
+        Task<Blogs> PutBlogsAsync(string id, Blogs blog);
+        Task<DeleteResult?> DeleteBlogsAsync(string id);
     }
 }
