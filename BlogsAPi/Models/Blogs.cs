@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using BlogsAPi.DTOs;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.IdGenerators;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +10,8 @@ namespace BlogsAPi.Models
     {
         [BsonId]
         [BsonElement("_id")]
-        public ObjectId? Id { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? Id { get; set; }
         [Required]
         [MinLength(1)]
         [BsonElement("title")]
@@ -23,6 +25,13 @@ namespace BlogsAPi.Models
         [BsonElement("createAt")]
         public DateTime CreatedAt { get; set; }
         [BsonElement("updateAt")]
-        public DateTime UpdatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public Blogs(BlogsDTO blogs)
+        {
+            Title = blogs.Title;
+            Content = blogs.Content;
+            Category = blogs.Category;
+            Tags = blogs.Tags;
+        }
     }
 }

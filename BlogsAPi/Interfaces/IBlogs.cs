@@ -7,11 +7,11 @@ namespace BlogsAPi.Interfaces
 {
     public interface IBlogs
     {
-        Task<List<Blogs>> GetBlogsAsync();
-        Task<Blogs> GetBlogsByIdAsync(ObjectId id);
-        Task<List<Blogs>> GetBlogsByTermAsync(string term);
+        Task<ApiResponse<List<Blogs>>> GetBlogsAsync(Pagination pag);
+        Task<ApiResponse<Blogs>> GetBlogsByIdAsync(string id);
+        Task<ApiResponse<List<Blogs>>> GetBlogsByTermAsync(string term,Pagination pag);
         Task PostBlogsAsync(Blogs blog);
-        Task<UpdateResult> PutBlogsAsync(ObjectId id, Blogs blog);
-        Task<DeleteResult> DeleteBlogsAsync(ObjectId id);
+        Task<Blogs> PutBlogsAsync(string id, Blogs blog);
+        Task<DeleteResult?> DeleteBlogsAsync(string id);
     }
 }

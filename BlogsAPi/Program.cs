@@ -14,8 +14,10 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<BlogsSettings>(
     builder.Configuration.GetSection("ConnectionStrings"));
+
 builder.Services.AddSingleton<MongoClient>(sp =>
     new MongoClient(builder.Configuration.GetConnectionString("BlogsApi")));
+
 builder.Services.AddScoped<IBlogs, BlogsService>();
 
 var app = builder.Build();
